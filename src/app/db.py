@@ -16,8 +16,8 @@ from datetime import datetime
 from databases import Database
 
 # заменить при запуске в докере, для локального запуска
-#DATABASE_URL = "postgresql://postgres:24233@127.0.0.1:5432/test_analitics"
-DATABASE_URL = os.getenv("DATABASE_URL") # для докера
+DATABASE_URL = "postgresql://postgres:Post328!@127.0.0.1:5432/test_analitics"
+#DATABASE_URL = os.getenv("DATABASE_URL") # для докера
 
 
 # SQLAlchemy создание движка

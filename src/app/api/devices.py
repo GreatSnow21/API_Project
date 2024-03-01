@@ -67,23 +67,31 @@ async def receive_data(device_data: DeviceData):
     return {"message": "Data received successfully"}
 
 @router.get("/data/{uuid}")
-async def read_data(id_dev: str, start_time: datetime = None, end_time: datetime = None):
+async def read_data(id_dev: int, start_time: datetime = None, end_time: datetime = None):
+    conditions = ["id_dev = :id_dev"]
+    values = {"id_dev": id_dev}
+
+    if start_time:
+        conditions.append("timestamp >= :start_time")
+        values["start_time"] = start_time.isoformat()
+    if end_time:
+        conditions.append("timestamp <= :end_time")
+        values["end_time"] = end_time.isoformat()
+
+    condition_str = " AND ".join(conditions)
     query = f"""
     SELECT * FROM device_data
-    WHERE id_dev = :id_dev
-    AND (:start_time IS NULL OR timestamp >= :start_time)
-    AND (:end_time IS NULL OR timestamp <= :end_time)
+    WHERE {condition_str}
     """
-    values = {"id_dev": id_dev, "start_time": start_time, "end_time": end_time}
     data = await database.fetch_all(query, values=values)
     if not data:
         raise HTTPException(status_code=404, detail="Data not found")
 
-    values = [d["x"] + d["y"] + d["z"] for d in data]
+    values_list = [d["x"] + d["y"] + d["z"] for d in data]
     return {
-        "min": min(values),
-        "max": max(values),
-        "median": statistics.median(values),
-        "sum": sum(values),
-        "count": len(values)
+        "min": min(values_list),
+        "max": max(values_list),
+        "median": statistics.median(values_list),
+        "sum": sum(values_list),
+        "count": len(values_list)
     }
